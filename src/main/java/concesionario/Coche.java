@@ -2,18 +2,19 @@ package concesionario;
 
 import java.util.Objects;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
+@Table(name = "concesionario")
 class Coche {
 
 	//private @Id @GeneratedValue Long id;
-	// había pensado en quizás la matrícula como id, pero como es distinto en
-	// algunos paises y demás
-	private @Id String matricula;
+	private @Id @Column(unique=true) String matricula;
 	private String modelo;
 	private String marca;
 
@@ -61,7 +62,7 @@ class Coche {
 		this.marca = marca;
 	}
 	
-
+	/*
 	@Override
 	public boolean equals(Object o) {
 
@@ -72,7 +73,20 @@ class Coche {
 		Coche c = (Coche) o;
 		return Objects.equals(this.matricula, c.matricula);
 	}
+	*/
+	/*
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.id, this.matricula, this.marca, this.modelo);
+	}
 
+	@Override
+	  public String toString() {
+	    return "Coche{\" + \"id=\" + this.id +" + ", matricula='" + this.matricula + '\'' + ", marca='" + this.marca
+	        + '\'' + ", modelo='" + this.modelo + '\'' + '}';
+	  }
+	  */
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.matricula, this.marca, this.modelo);
@@ -80,7 +94,7 @@ class Coche {
 
 	@Override
 	  public String toString() {
-	    return "Coche{" + "matricula='" + this.matricula + '\'' + ", marca='" + this.marca
+	    return "Coche{"+"matricula='" + this.matricula + '\'' + ", marca='" + this.marca
 	        + '\'' + ", modelo='" + this.modelo + '\'' + '}';
 	  }
 }
