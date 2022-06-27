@@ -29,15 +29,23 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 @RestController
 class Controlador {
 
 	private final Repositorio repository;
 	private final ModelAssembler assembler;
+	private final PDFGenerator pdfGenerator;
 
-	Controlador(Repositorio repository, ModelAssembler assembler) {
+	Controlador(Repositorio repository, ModelAssembler assembler, PDFGenerator pdfGenerator) {
 		this.repository = repository;
 		this.assembler = assembler;
+		this.pdfGenerator = pdfGenerator;
 	}
 
 	@GetMapping("/coches")
@@ -64,50 +72,20 @@ class Controlador {
 	Coche newCoche(@RequestBody Coche nCoche) {
 		return repository.save(nCoche);
 	}
+	 
+	 @GetMapping("/pdf/{marca}")
+	    public void generate(HttpServletResponse response, @PathVariable String marca) throws IOException {
+	        response.setContentType("application/pdf");
+	        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd:hh:mm:ss");
+	        String currentDateTime = dateFormatter.format(new Date());
 
-	@GetMapping("/pdf/{marca}")
-	void pdf(@PathVariable String marca) {
-		Document document = new Document();
-		try {
-			PdfWriter.getInstance(document, new FileOutputStream("concesionario.pdf"));
-		} catch (FileNotFoundException | DocumentException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+	        String headerKey = "Content-Disposition";
+	        String headerValue = "attachment; filename=pdf_" + currentDateTime + ".pdf";
+	        response.setHeader(headerKey, headerValue);
+	        CollectionModel<EntityModel<Coche>> c = findBymarca(marca);
 
-		document.open();
-		try {
-			document.add(new Chunk(""));
-		} catch (DocumentException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-		PdfPTable table = new PdfPTable(3);
-
-		CollectionModel<EntityModel<Coche>> c = findBymarca(marca);
-
-		Iterator<EntityModel<Coche>> i = c.iterator();
-
-		while (i.hasNext()) {
-			EntityModel<Coche> a = i.next();
-			Coche o = a.getContent();
-
-			table.addCell(o.getMarca());
-			table.addCell(o.getMatricula());
-			table.addCell(o.getModelo());
-			table.completeRow();
-		}
-
-		try {
-			document.add(table);
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		document.close();
-		
-	}
-
+			Iterator<EntityModel<Coche>> i = c.iterator();
+	 
+	        this.pdfGenerator.export(response, i);
+	    }
 }
